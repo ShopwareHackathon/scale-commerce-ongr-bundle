@@ -230,6 +230,8 @@ class PropertyFacetHandler implements FacetHandlerInterface
             return null;
         }
 
+
+
         $properties = $this->propertyGateway->getList(
             $valueIds,
             $context

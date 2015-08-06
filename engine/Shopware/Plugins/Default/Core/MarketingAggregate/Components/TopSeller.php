@@ -100,7 +100,8 @@ class Shopware_Components_TopSeller extends Enlight_Class
     /**
      * Initials the top seller data.
      * This function is used from the backend controller when the user
-     * want to refresh the top seller data manuel.
+     * want to refresh the top seller data manually.
+     * @param int $limit
      */
     public function initTopSeller($limit = null)
     {
@@ -108,7 +109,7 @@ class Shopware_Components_TopSeller extends Enlight_Class
         $orderTime = $this->getTopSellerOrderTime();
 
         $sql = "
-            SELECT 	articles.id as article_id,
+            SELECT articles.id as article_id,
                     NOW() as last_cleared,
                     " . $select . "
             FROM s_articles articles
@@ -122,7 +123,10 @@ class Shopware_Components_TopSeller extends Enlight_Class
             WHERE articles.id NOT IN (
                 SELECT s_articles_top_seller_ro.article_id FROM s_articles_top_seller_ro
             )
-            GROUP BY articles.id ";
+
+            GROUP BY articles.id
+            HAVING sales > 0";
+
 
         if ($limit !== null) {
             $sql = Shopware()->Db()->limit($sql, $limit);

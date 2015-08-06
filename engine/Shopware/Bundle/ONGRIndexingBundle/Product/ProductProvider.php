@@ -21,10 +21,11 @@
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
  */
-namespace Shopware\Bundle\ESIndexingBundle\Product;
+namespace Shopware\Bundle\ONGRIndexingBundle\Product;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Bundle\ESIndexingBundle\IdentifierSelector;
+use Shopware\Bundle\ESIndexingBundle\Product\ProductProviderInterface;
 use Shopware\Bundle\ESIndexingBundle\Struct\Product;
 use Shopware\Bundle\StoreFrontBundle\Gateway\DBAL\FieldHelper;
 use Shopware\Bundle\StoreFrontBundle\Gateway\DBAL\Hydrator\PropertyHydrator;
@@ -125,11 +126,6 @@ class ProductProvider implements ProductProviderInterface
      */
     public function get(Shop $shop, $numbers)
     {
-        $context = $this->contextService->createProductContext(
-            $shop->getId(),
-            null,
-            ContextService::FALLBACK_CUSTOMER_GROUP
-        );
 
         $products     = $this->productGateway->getList($numbers, $context);
         $average      = $this->voteService->getAverages($products, $context);
@@ -144,9 +140,10 @@ class ProductProvider implements ProductProviderInterface
             $number  = $product->getNumber();
             $id      = $product->getId();
 
-            if (!$product->isMainVariant()) {
+            if (!isset($calculated[$number])) {
                 continue;
             }
+
 
             if (isset($average[$number])) {
                 $product->setVoteAverage($average[$number]);
@@ -241,7 +238,15 @@ class ProductProvider implements ProductProviderInterface
      */
     private function getProperties($products, ShopContextInterface $context)
     {
+        $propertyGateway = Shopware()->Container()->get('shopware_storefront.product_property_gateway');
 
+        $result = $propertyGateway->getList(
+            $products,
+            $context
+        );
+
+
+        return $result;
 
         $ids = array_map(function (ListProduct $product) {
             return $product->getId();
@@ -266,8 +271,6 @@ class ProductProvider implements ProductProviderInterface
         ;
 
         $this->fieldHelper->addPropertyOptionTranslation($query, $context);
-
-
 
         /**@var $statement \Doctrine\DBAL\Driver\ResultStatement */
         $statement = $query->execute();
@@ -318,7 +321,13 @@ class ProductProvider implements ProductProviderInterface
             $currencies = $this->identifierSelector->getShopCurrencyIds($shop->getParentId());
         }
 
-        $customerGroups = $this->identifierSelector->getCustomerGroupKeys();
+        //$customerGroups = $this->identifierSelector->getCustomerGroupKeys();
+
+
+
+        $customerGroups = [$shop->getCustomerGroup()->getKey()];
+        $currencies = [$shop->getCurrency()->getId()];
+
         $contexts       = $this->getContexts($shop->getId(), $customerGroups, $currencies);
 
         $prices = [];
@@ -332,14 +341,16 @@ class ProductProvider implements ProductProviderInterface
             /**@var $context ProductContextInterface*/
             foreach ($contexts as $context) {
                 $customerGroup = $context->getCurrentCustomerGroup()->getKey();
-                $key = $customerGroup . '_' . $context->getCurrency()->getId();
+                //$key = $customerGroup . '_' . $context->getCurrency()->getId();
 
                 $product->setCheapestPriceRule($rules[$customerGroup]);
                 $this->priceCalculationService->calculateProduct($product, $context);
 
                 if ($product->getCheapestPrice()) {
-                    $prices[$number][$key] = $product->getCheapestPrice();
+                    $prices[$number] = $product->getCheapestPrice();
                 }
+
+                break; // hack, stop here. there should be only one context
             }
         }
 

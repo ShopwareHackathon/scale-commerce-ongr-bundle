@@ -141,7 +141,7 @@ class Product extends ListProduct
     }
 
     /**
-     * @return Price[]
+     * @return Price
      */
     public function getCalculatedPrices()
     {
@@ -149,9 +149,9 @@ class Product extends ListProduct
     }
 
     /**
-     * @param Price[] $calculatedPrices
+     * @param Price $calculatedPrices
      */
-    public function setCalculatedPrices($calculatedPrices)
+    public function setCalculatedPrices(Price $calculatedPrices)
     {
         $this->calculatedPrices = $calculatedPrices;
     }

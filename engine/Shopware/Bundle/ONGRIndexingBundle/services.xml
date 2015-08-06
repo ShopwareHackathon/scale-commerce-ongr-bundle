@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="shopware_elastic_search.ongr_indexer" class="Shopware\Bundle\ONGRIndexingBundle\Product\OngrIndexer">
+            <argument type="service" id="shopware_ongr.product_provider" />
+            <argument type="service" id="shopware_ongr.product_query_factory" />
+        </service>
+
+
+        <service id="shopware_ongr.product_query_factory" class="Shopware\Bundle\ONGRIndexingBundle\Product\ProductQueryFactory">
+            <argument type="service" id="dbal_connection" />
+        </service>
+
+        <service id="shopware_ongr.service_subscriber" class="Shopware\Bundle\ONGRIndexingBundle\Subscriber\ServiceSubscriber">
+            <tag name="shopware.event_subscriber" />
+        </service>
+
+        <service id="shopware_ongr.product_provider" class="Shopware\Bundle\ONGRIndexingBundle\Product\ProductProvider">
+            <argument type="service" id="shopware_storefront.list_product_gateway" />
+            <argument type="service" id="shopware_storefront.cheapest_price_service" />
+            <argument type="service" id="shopware_storefront.vote_service" />
+            <argument type="service" id="shopware_storefront.context_service" />
+            <argument type="service" id="dbal_connection" />
+            <argument type="service" id="shopware_elastic_search.identifier_selector" />
+            <argument type="service" id="shopware_storefront.price_calculation_service" />
+            <argument type="service" id="shopware_storefront.field_helper_dbal" />
+            <argument type="service" id="shopware_storefront.property_hydrator_dbal" />
+        </service>
+
+    </services>
+</container>

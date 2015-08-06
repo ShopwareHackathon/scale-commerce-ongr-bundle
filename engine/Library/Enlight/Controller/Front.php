@@ -244,6 +244,10 @@ class Enlight_Controller_Front extends Enlight_Class implements Enlight_Hook
                     'Enlight_Controller_Front_PostDispatch',
                     $eventArgs
                 );
+
+                Shopware()->Front()->Response()->setCookie("some", "foo", 0, '/', null, false, true);
+                Shopware()->Front()->Response()->setCookie("bar", "foo", 0, '/', null, false, false);
+
             } while (!$this->request->isDispatched());
         } catch (Exception $e) {
             if ($this->throwExceptions()) {

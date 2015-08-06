@@ -222,6 +222,7 @@ class Kernel implements HttpKernelInterface
                 $cookieContent['value'],
                 $cookieContent['expire'],
                 $cookieContent['path'],
+                $cookieContent['domain'],
                 (bool) $cookieContent['secure'],
                 (bool) $cookieContent['httpOnly']
             );
@@ -467,6 +468,7 @@ class Kernel implements HttpKernelInterface
         $loader->load('StoreFrontBundle/services.xml');
         $loader->load('PluginInstallerBundle/services.xml');
         $loader->load('ESIndexingBundle/services.xml');
+        $loader->load('ONGRIndexingBundle/services.xml');
 
         if ($this->isElasticSearchEnabled()) {
             $loader->load('SearchBundleES/services.xml');
