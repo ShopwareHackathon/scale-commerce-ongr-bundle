@@ -33,6 +33,8 @@ use Shopware\Bundle\StoreFrontBundle\Struct\ListProduct;
 use Shopware\Bundle\StoreFrontBundle\Struct\Shop;
 use Shopware\Components\HttpClient\GuzzleFactory;
 use Shopware\Components\HttpClient\GuzzleHttpClient;
+use Shopware\Components\Routing\Context;
+use Shopware\Components\Routing\Router;
 
 class OngrIndexer
 {
@@ -101,18 +103,30 @@ class OngrIndexer
 
         $baseURL = 'http://' . $shop->getHost() . $shop->getPath() . '/';
 
+        $shopModel = Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')->find($shop->getId());
+        $config = Shopware()->Config();
+        $routerContext = \Shopware\Components\Routing\Context::createFromShop($shopModel, $config);
+
+
+
+        /** @var Router $router */
+        $router = Shopware()->Container()->get('Router');
+        $router->setContext($routerContext);
+
         $data = [];
         foreach ($products as $product) {
-            $category = [
+            $category1 = [
                 '_id' => "1",
                 'title' => "Shoes",
+                'breadcrumbs' => null,
             ];
 
-            $category = [
+            $category2 = [
                 '_id' => 2,
                 '_parent' => 1,
                 'title' => "Women Shoes",
-                'hiden' => true,
+                //'hiden' => true,
+                'breadcrumbs' => null,
             ];
 
             $category = [
@@ -121,6 +135,10 @@ class OngrIndexer
             ];
 
             $categoryIds = (isset($categories[$product->getId()])) ? $categories[$product->getId()] : array();
+
+            //$baseFile = $this->config->get('baseFile');
+            $detail = "?sViewport=detail&sArticle=" . $product->getId();
+            $rewriteUrl = Shopware()->Modules()->Core()->sRewriteLink($detail, $product->getName());
 
             $productData = [
                 '_id'   => $product->getVariantId(),
@@ -134,7 +152,7 @@ class OngrIndexer
                 //'thumb' => 'my thumb', //$product->getCover()->getThumbnails()[0]->get,
                 'urls' => [
                     [
-                        'url' => 'products/' . $product->getVariantId(),
+                        'url' => $rewriteUrl,
                         'key' => '',
                     ]
                 ]
@@ -165,11 +183,10 @@ class OngrIndexer
         $client = new GuzzleHttpClient(new GuzzleFactory());
 
         $result = $client->post(
-            "http://10.70.31.110:8000/app.php/api/v10",
+            "http://shopware.scale.sc/api/v10",
             [],
             $data
         );
-
 
         var_dump($result->getStatusCode());
         return;
