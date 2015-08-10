@@ -140,6 +140,9 @@ class OngrIndexer
             $detail = "?sViewport=detail&sArticle=" . $product->getId();
             $rewriteUrl = Shopware()->Modules()->Core()->sRewriteLink($detail, $product->getName());
 
+            $strip = "http://" . $routerContext->getHost() . '/';
+            $rewriteUrl = str_replace($strip, '', $rewriteUrl);
+
             $productData = [
                 '_id'   => $product->getVariantId(),
                 'parent' => ($product->isMainVariant()) ? null : $product->getMainVariantId(),

@@ -49,12 +49,12 @@ class RewriteGenerator implements GeneratorListInterface
     public function generate(array $params, Context $context)
     {
         $orgQuery = $this->preAssemble($params, $context);
-
         if (!is_array($orgQuery)) {
             return false;
         }
 
         $orgPath = http_build_query($orgQuery, '', '&');
+
         list($url) = $this->rewriteList([$orgPath], $context);
 
         if ($url === false) {
